@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIUS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link
+        rel="icon"
+        href="https://cdn.glitch.global/97a268a4-dfe5-4c65-912a-0b705b326087/44dd4801-0a72-49da-b50d-12b5cdf82783.jpg?v=1725084192807"
+        type="image/x-icon"/>
+</head>
+<body>
+    <!-- Chatbox for displaying messages -->
+    <div id="chatbox" class="chatbox"></div>
+    <!-- Typing indicator -->
+    <div id="typingIndicator" class="typing-indicator">Typing...</div>
+
+    <!-- Input areas -->
+    <textarea id="userMessage" placeholder="Type your message..."></textarea>
+    <textarea id="systemPrompt" placeholder="System prompt..."></textarea>
+
+    <input type="number" id="temperature" placeholder="Temperature (0.7)" step="0.1" min="0">
+    <input type="number" id="topP" placeholder="Top P (0.9)" step="0.1" min="0">
+    <input type="number" id="maxTokens" placeholder="Max Output Tokens (1000)" step="10" min="1">
+
+    <!-- API key and model selection -->
+    <input type="text" id="apiKey" placeholder="Enter your Gemini API key">
+    <select id="modelSelect">
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+        <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+    </select>
+
+    <!-- Action buttons -->
+    <button id="sendButton">Send</button>
+    <button id="exportButton">Export Chat</button>
+    <input type="file" id="importFile" style="display:none;">
+    <button id="importButton">Import Chat</button>
+    <button id="regenerateButton">Regenerate Last Message</button>
+
+    <!-- Safety Level Selection -->
+    <div class="danger-ui">
+        <label for="safetyLevel">Safety Level:</label>
+        <select id="safetyLevel">
+            <option value="safe">Safe</option>
+            <option value="normal">Normal</option>
+            <option value="heat">Heat</option>
+            <option value="horny">Horny</option>
+        </select>
+        <div class="safety-instructions">
+            <p><strong>Safe:</strong> No NSFW content is allowed. Suitable for general audiences. (WORKING GET OR CREATE AN RP PROMPT FOR BETTER RESULT)</p>
+            <p><strong>Normal:</strong> Only role-playing (RP) responses allowed. No NSFW content and responses should be appropriate for adults. (NOT WORKING YET)</p>
+            <p><strong>Heat:</strong> NSFW content is more permissive. Use with caution.(NOT WORKING YET) </p>
+            <p><strong>Horny:</strong> NSFW content is fully allowed. Intended for explicit use. (NOT WORKING YET)</p>
+        </div>
+        
+        <!-- Debug Menu -->
+        <button id="toggleDebugMenu">Toggle Debug Menu</button>
+        <div id="debugMenu" class="debug-menu">
+            <h3>Debug Menu</h3>
+            <p><strong>Safety Level:</strong> <span id="debugSafetyLevel">N/A</span></p>
+            <p><strong>System Instruction:</strong> <span id="debugSystemInstruction">N/A</span></p>
+            <p><strong>API Response:</strong> <span id="debugApiResponse">N/A</span></p>
+            <p><strong>NSFW Safety Settings:</strong></p>
+            <pre id="debugNsfwSettings">N/A</pre>
+            <!-- Version Badge -->
+            <div class="version-badge">0.1</div>
+        </div>
+    </div>
+
+    <!-- Import modules from CDN -->
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+        import { HarmBlockThreshold, HarmCategory } from "https://esm.run/@google/generative-ai";
+
+        const safetyInstructionsMap = {
+            safe: "You are in 'Safe' mode. No NSFW content is allowed. Ensure all responses are suitable for general audiences.",
+            normal: "You are in 'Normal' mode. Only role-playing (RP) responses are allowed. Ensure responses are appropriate for adults and avoid NSFW content.",
+            heat: "You are in 'Heat' mode. NSFW content is more permissive. Use with caution and ensure content is appropriate for the context.",
+            horny: "You are in 'Horny' mode. NSFW content is fully allowed. Ensure all content aligns with explicit use guidelines."
+        };
+
+        let lastMessage = {}; // Store last user message and system prompt
+
+        async function sendMessage() {
+            const userMessage = document.getElementById('userMessage').value.trim();
+            const systemPrompt = document.getElementById('systemPrompt').value.trim();
+            const temperature = parseFloat(document.getElementById('temperature').value) || 0.7;
+            const topP = parseFloat(document.getElementById('topP').value) || 0.9;
+            const maxTokens = parseInt(document.getElementById('maxTokens').value, 10) || 1000;
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const modelName = document.getElementById('modelSelect').value;
+            const safetyLevel = document.getElementById('safetyLevel').value;
+
+            if (!apiKey) {
+                alert('Please enter your API key.');
+                return;
+            }
+
+            if (!userMessage) {
+                alert('Please enter a message.');
+                return;
+            }
+
+            // Store the last message details
+            lastMessage = { userMessage, systemPrompt };
+
+            const chatbox = document.getElementById('chatbox');
+            const userMessageElem = document.createElement('div');
+            userMessageElem.className = 'message user';
+            userMessageElem.textContent = userMessage;
+            chatbox.appendChild(userMessageElem);
+            document.getElementById('userMessage').value = '';
+
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.style.display = 'block';
+
+            const genAI = new GoogleGenerativeAI(apiKey);
+
+            let safetySettings = [
+                {
+                    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                },
+                {
+                    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                },
+                {
+                    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                },
+                {
+                    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                    threshold: HarmBlockThreshold.BLOCK_NONE,
+                }
+            ];
+
+            switch (safetyLevel) {
+                case 'safe':
+                    safetySettings = safetySettings.map(setting => ({
+                        ...setting,
+                        threshold: HarmBlockThreshold.BLOCK_HIGH
+                    }));
+                    break;
+                case 'normal':
+                    safetySettings = safetySettings.map(setting => ({
+                        ...setting,
+                        threshold: HarmBlockThreshold.BLOCK_MEDIUM
+                    }));
+                    break;
+                case 'heat':
+                    safetySettings = safetySettings.map(setting => ({
+                        ...setting,
+                        threshold: HarmBlockThreshold.BLOCK_LOW
+                    }));
+                    break;
+                case 'horny':
+                    safetySettings = safetySettings.map(setting => ({
+                        ...setting,
+                        threshold: HarmBlockThreshold.BLOCK_NONE
+                    }));
+                    break;
+            }
+
+            const systemInstruction = `${safetyInstructionsMap[safetyLevel] || "No specific guidelines set."} ${systemPrompt}`;
+            console.log('Safety Settings:', safetySettings);
+            console.log('System Instruction:', systemInstruction);
+
+            const model = genAI.getGenerativeModel({
+                model: modelName,
+                systemInstruction: systemInstruction
+            });
+
+            const prompt = `${systemPrompt}\nUser: ${userMessage}\nAI:`;
+            console.log('Sending prompt:', prompt);
+
+            try {
+                const result = await model.generateContent(prompt, {
+                    temperature: temperature,
+                    top_p: topP,
+                    max_output_tokens: maxTokens,
+                    safety_settings: safetySettings
+                });
+
+                typingIndicator.style.display = 'none';
+
+                const botMessageElem = document.createElement('div');
+                botMessageElem.className = 'message bot';
+                botMessageElem.textContent = result.response.text();
+                chatbox.appendChild(botMessageElem);
+                chatbox.scrollTop = chatbox.scrollHeight;
+
+                console.log('AI Response:', result.response.text());
+                console.log('Response received successfully.');
+
+                document.getElementById('debugSafetyLevel').textContent = safetyLevel;
+                document.getElementById('debugSystemInstruction').textContent = systemInstruction;
+                document.getElementById('debugApiResponse').textContent = result.response.text();
+                document.getElementById('debugNsfwSettings').textContent = JSON.stringify(safetySettings, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                typingIndicator.style.display = 'none';
+                alert('Failed to generate a response. Please try again later.');
+
+                document.getElementById('debugSafetyLevel').textContent = safetyLevel;
+                document.getElementById('debugSystemInstruction').textContent = systemInstruction;
+                document.getElementById('debugApiResponse').textContent = 'Error occurred.';
+                document.getElementById('debugNsfwSettings').textContent = JSON.stringify(safetySettings, null, 2);
+            }
+        }
+
+        async function regenerateMessage() {
+            if (lastMessage.userMessage && lastMessage.systemPrompt) {
+                console.log('Regenerating message:', lastMessage);
+                document.getElementById('userMessage').value = lastMessage.userMessage;
+                document.getElementById('systemPrompt').value = lastMessage.systemPrompt;
+                await sendMessage();
+            } else {
+                alert('No previous message to regenerate.');
+            }
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+        document.getElementById('regenerateButton').addEventListener('click', regenerateMessage);
+        document.getElementById('toggleDebugMenu').addEventListener('click', () => {
+            const debugMenu = document.getElementById('debugMenu');
+            debugMenu.classList.toggle('active');
+        });
+
+        // Add Enter key functionality
+        document.getElementById('userMessage').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevent adding a new line
+                sendMessage();
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const versionBadge = document.querySelector('.version-badge');
+            const debugMenu = document.getElementById('debugMenu');
+
+            debugMenu.addEventListener('mousemove', (event) => {
+                const badgeRect = versionBadge.getBoundingClientRect();
+                const mouseX = event.clientX;
+                const mouseY = event.clientY;
+
+                const badgeCenterX = badgeRect.left + badgeRect.width / 2;
+                const badgeCenterY = badgeRect.top + badgeRect.height / 2;
+                const distance = Math.sqrt((mouseX - badgeCenterX) ** 2 + (mouseY - badgeCenterY) ** 2);
+
+                // Adjust the distance threshold as needed
+                const threshold = 100; 
+
+                if (distance < threshold) {
+                    versionBadge.classList.add('spin');
+                } else {
+                    versionBadge.classList.remove('spin');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
