@@ -1,7 +1,6 @@
-/* Global styles */
 body {
     font-family: 'Roboto', sans-serif;
-    background: #0d0d0d; /* Dark background */
+    background: #0d0d0d;
     margin: 0;
     padding: 0;
     display: flex;
@@ -9,19 +8,18 @@ body {
     align-items: center;
 }
 
-/* Header styling */
 .header {
     display: flex;
     align-items: center;
     padding: 15px 30px;
-    background: linear-gradient(145deg, #1b1b1b, #333); /* Dark gradient */
+    background: linear-gradient(145deg, #1b1b1b, #333);
     color: #fff;
     font-family: 'Roboto', sans-serif;
     width: 100%;
     max-width: 800px;
     border-bottom: 2px solid #444;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
-    border-radius: 0 0 10px 10px; /* Rounded bottom corners */
+    border-radius: 0 0 10px 10px;
     margin-bottom: 20px;
 }
 
@@ -30,15 +28,14 @@ body {
     font-weight: 700;
 }
 
-/* Chatbox */
 .chatbox {
     width: 90%;
     max-width: 800px;
     height: 70vh;
     margin: 20px auto;
     padding: 20px;
-    background: linear-gradient(145deg, #1b1b1b, #2a2a2a); /* Dark gradient */
-    border-radius: 0; /* Sharper corners */
+    background: linear-gradient(145deg, #1b1b1b, #2a2a2a);
+    border-radius: 0;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 10px 20px rgba(0, 0, 0, 0.6);
     overflow-y: auto;
     display: flex;
@@ -56,7 +53,7 @@ body {
     width: calc(100% - 10px);
     height: calc(100% - 10px);
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 0; /* Sharper corners */
+    border-radius: 0;
     filter: blur(50px);
     z-index: -1;
     transition: opacity 0.3s ease;
@@ -66,10 +63,9 @@ body {
     opacity: 0.3;
 }
 
-/* Messages */
 .message {
     padding: 15px;
-    border-radius: 0; /* Sharper corners */
+    border-radius: 0;
     max-width: 75%;
     word-wrap: break-word;
     animation: fadeIn 0.5s ease, glowing 1.5s infinite alternate;
@@ -77,7 +73,6 @@ body {
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
-/* User Message */
 .message.user {
     background: linear-gradient(145deg, #007bff, #0056b3);
     color: #fff;
@@ -86,7 +81,6 @@ body {
     position: relative;
 }
 
-/* Bot Message */
 .message.bot {
     background: linear-gradient(145deg, #333, #444);
     color: #ddd;
@@ -95,7 +89,6 @@ body {
     position: relative;
 }
 
-/* Inputs and textareas */
 textarea,
 input[type="number"],
 input[type="text"],
@@ -104,7 +97,7 @@ select {
     max-width: 800px;
     margin: 10px auto;
     padding: 15px;
-    border-radius: 0; /* Sharper corners */
+    border-radius: 0;
     border: 1px solid #444;
     font-size: 16px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
@@ -155,13 +148,12 @@ select:hover {
     transform: scale(1.02);
 }
 
-/* Buttons */
 button {
     width: 90%;
     max-width: 800px;
     margin: 10px auto;
     padding: 15px;
-    border-radius: 0; /* Sharper corners */
+    border-radius: 0;
     border: none;
     background: linear-gradient(145deg, #007bff, #0056b3);
     color: #fff;
@@ -199,12 +191,11 @@ button:disabled {
     transition: background 0.3s ease;
 }
 
-/* Safety UI */
 .danger-ui {
     border: 2px solid red;
     padding: 10px;
     margin-top: 20px;
-    border-radius: 0; /* Sharper corners */
+    border-radius: 0;
     background-color: #fdd;
 }
 
@@ -218,7 +209,6 @@ button:disabled {
     margin: 5px 0;
 }
 
-/* Debug Menu */
 .debug-menu {
     display: none;
     margin-top: 20px;
@@ -226,7 +216,7 @@ button:disabled {
     border: 1px solid #ddd;
     background-color: #fff;
     border-radius: 15px;
-    position: relative; /* Ensure version badge is positioned correctly */
+    position: relative;
 }
 
 .debug-menu.active {
@@ -249,10 +239,9 @@ button:disabled {
     top: 10px;
     right: 10px;
     transition: transform 0.3s ease;
-    animation: rotate 10s linear infinite; /* Add this line for rotation */
+    animation: rotate 10s linear infinite;
 }
 
-/* Animation CSS */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -285,7 +274,6 @@ button:disabled {
     }
 }
 
-/* Rotate animation */
 @keyframes rotate {
     from {
         transform: rotate(0deg);
