@@ -25,7 +25,6 @@
     }
 }
 
-/* General scrolling animation for the chatbox */
 @keyframes scrollAnim {
     from {
         transform: translateY(0);
@@ -39,42 +38,8 @@
     animation: scrollAnim 1.5s ease-in-out infinite;
 }
 
-/* Glowing animation for messages */
-@keyframes glowing {
-    0% {
-        box-shadow: 0 0 15px rgba(0, 123, 255, 0.5);
-    }
-    100% {
-        box-shadow: 0 0 30px rgba(0, 123, 255, 1);
-    }
-}
-
 .message {
-    animation: glowing 1.5s infinite alternate;
-}
-
-/* Fade-in animation for messages */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-.message {
-    animation: fadeIn 0.5s ease;
-}
-
-/* Typing indicator animation */
-@keyframes typingBlink {
-    0%, 100% {
-        opacity: 0;
-    }
-    50% {
-        opacity: 1;
-    }
+    animation: glowing 1.5s infinite alternate, fadeIn 0.5s ease;
 }
 
 .typing-indicator {
