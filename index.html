@@ -7,18 +7,12 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="animations.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
-    <link
-        rel="icon"
-        href="https://cdn.glitch.global/97a268a4-dfe5-4c65-912a-0b705b326087/44dd4801-0a72-49da-b50d-12b5cdf82783.jpg?v=1725084192807"
-        type="image/x-icon"/>
+    <link rel="icon" href="https://cdn.glitch.global/97a268a4-dfe5-4c65-912a-0b705b326087/44dd4801-0a72-49da-b50d-12b5cdf82783.jpg?v=1725084192807" type="image/x-icon"/>
 </head>
 <body>
-    <!-- Chatbox for displaying messages -->
     <div id="chatbox" class="chatbox"></div>
-    <!-- Typing indicator -->
     <div id="typingIndicator" class="typing-indicator">Typing...</div>
 
-    <!-- Input areas -->
     <textarea id="userMessage" placeholder="Type your message..."></textarea>
     <textarea id="systemPrompt" placeholder="System prompt..."></textarea>
 
@@ -26,7 +20,6 @@
     <input type="number" id="topP" placeholder="Top P (0.9)" step="0.1" min="0">
     <input type="number" id="maxTokens" placeholder="Max Output Tokens (1000)" step="10" min="1">
 
-    <!-- API key and model selection -->
     <input type="text" id="apiKey" placeholder="Enter your Gemini API key">
     <select id="modelSelect">
         <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
@@ -34,14 +27,12 @@
         <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
     </select>
 
-    <!-- Action buttons -->
     <button id="sendButton">Send</button>
     <button id="exportButton">Export Chat</button>
     <input type="file" id="importFile" style="display:none;">
     <button id="importButton">Import Chat</button>
     <button id="regenerateButton">Regenerate Last Message</button>
 
-    <!-- Safety Level Selection -->
     <div class="danger-ui">
         <label for="safetyLevel">Safety Level:</label>
         <select id="safetyLevel">
@@ -53,11 +44,10 @@
         <div class="safety-instructions">
             <p><strong>Safe:</strong> No NSFW content is allowed. Suitable for general audiences. (WORKING GET OR CREATE AN RP PROMPT FOR BETTER RESULT)</p>
             <p><strong>Normal:</strong> Only role-playing (RP) responses allowed. No NSFW content and responses should be appropriate for adults. (NOT WORKING YET)</p>
-            <p><strong>Heat:</strong> NSFW content is more permissive. Use with caution.(NOT WORKING YET) </p>
+            <p><strong>Heat:</strong> NSFW content is more permissive. Use with caution.(NOT WORKING YET)</p>
             <p><strong>Horny:</strong> NSFW content is fully allowed. Intended for explicit use. (NOT WORKING YET)</p>
         </div>
-        
-        <!-- Debug Menu -->
+
         <button id="toggleDebugMenu">Toggle Debug Menu</button>
         <div id="debugMenu" class="debug-menu">
             <h3>Debug Menu</h3>
@@ -66,12 +56,10 @@
             <p><strong>API Response:</strong> <span id="debugApiResponse">N/A</span></p>
             <p><strong>NSFW Safety Settings:</strong></p>
             <pre id="debugNsfwSettings">N/A</pre>
-            <!-- Version Badge -->
             <div class="version-badge">0.1</div>
         </div>
     </div>
 
-    <!-- Import modules from CDN -->
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
         import { HarmBlockThreshold, HarmCategory } from "https://esm.run/@google/generative-ai";
@@ -83,7 +71,7 @@
             horny: "You are in 'Horny' mode. NSFW content is fully allowed. Ensure all content aligns with explicit use guidelines."
         };
 
-        let lastMessage = {}; // Store last user message and system prompt
+        let lastMessage = {};
 
         async function sendMessage() {
             const userMessage = document.getElementById('userMessage').value.trim();
@@ -105,7 +93,6 @@
                 return;
             }
 
-            // Store the last message details
             lastMessage = { userMessage, systemPrompt };
 
             const chatbox = document.getElementById('chatbox');
@@ -204,66 +191,4 @@
             } catch (error) {
                 console.error('Error:', error);
                 typingIndicator.style.display = 'none';
-                alert('Failed to generate a response. Please try again later.');
-
-                document.getElementById('debugSafetyLevel').textContent = safetyLevel;
-                document.getElementById('debugSystemInstruction').textContent = systemInstruction;
-                document.getElementById('debugApiResponse').textContent = 'Error occurred.';
-                document.getElementById('debugNsfwSettings').textContent = JSON.stringify(safetySettings, null, 2);
-            }
-        }
-
-        async function regenerateMessage() {
-            if (lastMessage.userMessage && lastMessage.systemPrompt) {
-                console.log('Regenerating message:', lastMessage);
-                document.getElementById('userMessage').value = lastMessage.userMessage;
-                document.getElementById('systemPrompt').value = lastMessage.systemPrompt;
-                await sendMessage();
-            } else {
-                alert('No previous message to regenerate.');
-            }
-        }
-
-        document.getElementById('sendButton').addEventListener('click', sendMessage);
-        document.getElementById('regenerateButton').addEventListener('click', regenerateMessage);
-        document.getElementById('toggleDebugMenu').addEventListener('click', () => {
-            const debugMenu = document.getElementById('debugMenu');
-            debugMenu.classList.toggle('active');
-        });
-
-        // Add Enter key functionality
-        document.getElementById('userMessage').addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault(); // Prevent adding a new line
-                sendMessage();
-            }
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const versionBadge = document.querySelector('.version-badge');
-            const debugMenu = document.getElementById('debugMenu');
-
-            debugMenu.addEventListener('mousemove', (event) => {
-                const badgeRect = versionBadge.getBoundingClientRect();
-                const mouseX = event.clientX;
-                const mouseY = event.clientY;
-
-                const badgeCenterX = badgeRect.left + badgeRect.width / 2;
-                const badgeCenterY = badgeRect.top + badgeRect.height / 2;
-                const distance = Math.sqrt((mouseX - badgeCenterX) ** 2 + (mouseY - badgeCenterY) ** 2);
-
-                // Adjust the distance threshold as needed
-                const threshold = 100; 
-
-                if (distance < threshold) {
-                    versionBadge.classList.add('spin');
-                } else {
-                    versionBadge.classList.remove('spin');
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+                alert('Failed to generate a response. Please try again later
