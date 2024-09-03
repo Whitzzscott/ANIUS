@@ -191,4 +191,63 @@
             } catch (error) {
                 console.error('Error:', error);
                 typingIndicator.style.display = 'none';
-                alert('Failed to generate a response. Please try again later
+                alert('Failed to generate a response. Please try again later') 
+        document.getElementById('debugSafetyLevel').textContent = safetyLevel;
+                document.getElementById('debugSystemInstruction').textContent = systemInstruction;
+                document.getElementById('debugApiResponse').textContent = 'Error occurred.';
+                document.getElementById('debugNsfwSettings').textContent = JSON.stringify(safetySettings, null, 2);
+            }
+        }
+
+        async function regenerateMessage() {
+            if (lastMessage.userMessage && lastMessage.systemPrompt) {
+                console.log('Regenerating message:', lastMessage);
+                document.getElementById('userMessage').value = lastMessage.userMessage;
+                document.getElementById('systemPrompt').value = lastMessage.systemPrompt;
+                await sendMessage();
+            } else {
+                alert('No previous message to regenerate.');
+            }
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+        document.getElementById('regenerateButton').addEventListener('click', regenerateMessage);
+        document.getElementById('toggleDebugMenu').addEventListener('click', () => {
+            const debugMenu = document.getElementById('debugMenu');
+            debugMenu.classList.toggle('active');
+        });
+
+        document.getElementById('userMessage').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const versionBadge = document.querySelector('.version-badge');
+            const debugMenu = document.getElementById('debugMenu');
+
+            debugMenu.addEventListener('mousemove', (event) => {
+                const badgeRect = versionBadge.getBoundingClientRect();
+                const mouseX = event.clientX;
+                const mouseY = event.clientY;
+
+                const badgeCenterX = badgeRect.left + badgeRect.width / 2;
+                const badgeCenterY = badgeRect.top + badgeRect.height / 2;
+                const distance = Math.sqrt((mouseX - badgeCenterX) ** 2 + (mouseY - badgeCenterY) ** 2);
+
+                const threshold = 100; 
+
+                if (distance < threshold) {
+                    versionBadge.classList.add('spin');
+                } else {
+                    versionBadge.classList.remove('spin');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
